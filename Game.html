@@ -1,0 +1,687 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<title>ALGO</title>
+<meta name="description" content="Brewiarz">
+<meta name="author" content="Brewiarz">
+<meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<style>
+body {
+	/*wyzerowanie marginesu*/
+margin: 0;
+	/*body ma zajmować wysokosć przeglądarki*/
+height: 100vh;
+	/*wyśrodkowanie elementu canvas*/
+display: flex;
+	align-items: center;
+	justify-content: center;
+	/*kolor tła całej strony*/
+	background-color: darkgray;
+}
+342 ma 
+421 kj 246
+canvas {
+	/*określamy obramowania canvas*/
+border: 3px solid #fff;
+}
+</style>
+
+</head>
+
+<body>
+<canvas>
+<img src="nem.png" id="f"></img>
+<img src="fnem.png" id="ff"></img>
+<img src="aq.jpg" id="bg"></img>
+<img src="face.png" id="face"></img></canvas>
+<script >
+/*Pobranie elementu canvas*/
+
+class whiteHole
+{
+constructor (posXy, sizeXs, posYy, sizeYss)
+{
+this.posX = posXy;
+this.posY = posYy;
+this.sizeX = sizeXs;
+this.sizeY = sizeYss;
+}
+}
+
+var colissionHistory = new Array();
+var cols=0;
+var gravity = 0.99;
+var colTime = new Date().getTime();
+var lastcol = "nic";
+var qcol = "nic";
+const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+var x = null;
+var y = null;
+var level = 10;
+let prevX;
+let prevY;
+let xSpd;
+let ySpd;
+var dbg = true;
+var nem;
+var fnem;
+var bg ;
+var faced;
+var ballArray =new Array;
+var frameArray = new Array;
+var whiteHolesArray = new Array;
+var refreshIntervalid;
+
+const canvas = document.querySelector('canvas');
+document.addEventListener('mousemove', onMouseUpdate, false);
+document.addEventListener('mouseenter', onMouseUpdate, false);
+canvas.addEventListener("touchmove", handleMove, false);
+
+
+
+function handleMove(e)
+{
+	e.preventDefault();
+	var touchobj = e.changedTouches[0];
+	
+	x = parseInt(touchobj.clientX);
+	y =parseInt(touchobj.clientY);
+}
+
+
+const ctx = canvas.getContext('2d');
+window.onload = function() {
+	nem = document.getElementById("f");
+	fnem = document.getElementById("ff");
+	faced = document.getElementById("face");
+	bg = document.getElementById("bg");
+	
+	whiteHolesArray[0] = new whiteHole(randomInt(0,cw),30,randomInt(0,ch),30);
+	
+	
+	console.log(nem);
+ ballArray =[ new Ball(cw / 2 - 20 / 2, ch / 2 - 20 / 2, 40,25,'#aaff00',0,nem,fnem)];
+/*new Ball (cw / 3 - 20 / 3, 50, 20,'#aa0010',1),
+new Ball (700, 100, 20,'#0000dd',2),
+new Ball (cw / 5 - 20 / 3, 240, 20,'#123ddf',3),
+new Ball (cw / 6 - 20 / 3, 260, 20,'#ffaaaa',4),
+new Ball (cw / 7 - 20 / 3, 172 , 20,'#cc0010',5),
+new Ball (cw / 8 - 20 / 3, 290 , 20,'#aaaaaa',6),
+new Ball (cw / 9 - 20 / 3, 360, 20,'#ab22ee',7)];
+*/
+	regenerateArray();
+
+	
+	//if(ballArray[0].eid == 0);
+	refreshIntervalid =	setInterval(game, 1000/69);
+}; 
+
+function regenerateArray()
+{
+
+for (i = 1; i < level; i++) {
+	ballqq = new Ball (randomInt(0,cw), randomInt(0,ch), 40,25,'#'+rc()+rc()+rc()+rc()+rc()+rc(),i, nem,fnem);
+	var xx = randomInt(0,2);
+	if (xx==1)
+	ballqq.dirX  =true;
+	else ballqq.dirX = false;
+
+	var yx = randomInt(0,2);
+	if (yx==1)
+	ballqq.dirY  =true;
+	else ballqq.dirY = false;
+	ballqq.ballSpeedX = randomFloat(0,3);
+	ballqq.ballSpeedY = randomFloat(0,3);
+	ballArray.push(ballqq);
+} 
+}
+
+function rc()
+{
+	var subj = randomInt(0,16);
+	switch (subj)
+	{
+	case 0:
+		return "0";
+		
+	case 1:
+		return "1";
+		
+	case 2:
+		return "2";
+		
+	case 3:
+		return "3";
+		
+	case 4:
+		return "4";
+		
+	case 5:
+		return "5";
+		
+	case 6:
+		return "6";
+		
+	case 7:
+		return "7";
+		
+	case 8:
+		return "8";
+		
+	case 9:
+		return "9";
+		
+	case 10:
+		return "a";
+		
+	case 11:
+		return "b";
+		
+	case 12:
+		return "c";
+		
+	case 13:
+		return "d";
+		
+	case 14:
+		return "e";
+		
+	case 15:
+		return "f";
+		
+	default: return "0";
+		
+	}
+}
+
+
+
+function onMouseUpdate(e) {
+	x = e.pageX;
+	y = e.pageY;
+	//console.log(x, y);
+}
+
+function getMouseX() {
+	return x;
+}
+
+function getMouseY() {
+	return y;
+}
+
+class colizja
+{
+	constructor (posX, posY, time, opis)
+	{
+		this.posX = posX;
+		this.posY = posY;
+		this.time = time;
+		this.opis = opis;
+	}
+}
+
+class Ball 
+{
+	
+	constructor(posX, posY, sizeX,sizeY, color, eid, faceaa, facefaa) 
+	{
+		this.ballPosX = posX;
+		this.ballPosY= posY;
+		this.sizeX = sizeX;
+		this.sizeY = sizeY;
+		this.color = color;
+		this.ballSpeedX=0;
+		this.ballSpeedY=0
+		this.dirX = true;
+		this.dirY = true;
+		this.eid = eid;
+		this.colWth = -1;
+		this.colcc = 0;
+		this.isCol = false;
+		this.face = faceaa;
+		this.facef = facefaa;
+	}
+
+}
+
+
+/*przypisanie kontekstu graficznego - nowe właściwości i metody do których odwałamy sie za pomocą obiektu ctx*/
+
+
+/*nadajemy canvas wysokość i szerokosć (domyślnie 300 x 150)*/
+//vw = window.innerWidth;
+// vh = window.innerHeight;
+canvas.width = vw;
+canvas.height = vh;
+
+/*wysokosć i szerokość przypisujemy do zmiennych - będzie nam łatwiej się do nich odowływać*/
+const cw = vw*0.99;// canvas.width;
+const ch = vh*0.99;//canvas.height;
+
+const ballSize = 20; //wielkosć naszej piłki która będzie kwadratem
+const curSize  = 50;
+
+let ballSpeedX = 0; //wartość określająca zmianę położenia piłki (w praktyce ilość pikseli) na osi x
+let ballSpeedY = 0; //wartość określająca zmianę położenia piłki (w praktyce ilość pikseli) na osi y
+
+let dirX = true;
+let dirY = true;
+
+let cDirX;
+let cDirY;
+
+function randomInt(min, max) {
+	return min + Math.floor((max - min) * Math.random());
+}
+function randomFloat(min, max) {
+	return min + (max - min) * Math.random();
+}
+
+
+function colH()
+{
+	colissionHistory.forEach(function(item, index, obj) 
+	{
+		ctx.fillStyle = 'white'; //ten kolor będzie aktywny dopóki nie zostaniue nadpisany kolejnym ctx.fillStyle
+		//ctx.fillRect(18, 40,300,120 );
+		ctx.font = "14px Arial";
+		//ctx.fillText(item.opis+" "+(new Date().getTime()-item.time)+"ms temu",item.posX, item.posY);//
+		//ctx.fillText("GTFO Mark... !",item.posX, item.posY);//
+		if(new Date().getTime()-item.time> 1000)
+		obj.splice(index, 1);
+	});
+}
+
+function ball() {
+	//wtskazany kolor biały i narysowanie piłki w jej aktualnej pozycji
+	var isoisa = 0;
+	
+	
+	
+	ballArray.forEach( function(item, index, obj)
+	{
+		isoisa ++;
+		ctx.fillStyle = 'green'; //ten kolor będzie aktywny dopóki nie zostaniue nadpisany kolejnym ctx.fillStyle
+		//ctx.fillRect(18, 40,300,120 );
+		ctx.fillStyle = item.color;
+		
+		ctx.font = "14px Arial";
+		// item.color = '#aaff00';
+		ctx.fillStyle = item.color;
+		if(dbg)
+			{
+			ctx.fillText(item.eid + " cols:"+item.colcc+" colWth: "+item.colWth+"  dirX:"+ item.dirX+" dirY:"+item.dirY+" spd:"+Math.floor(item.ballSpeedX+item.ballSpeedY),item.ballPosX-50, item.ballPosY+50);//
+			ctx.fillRect(item.ballPosX, item.ballPosY, item.sizeX, item.sizeY);
+			}
+		else
+		{
+		if(item.dirX)
+		ctx.drawImage(item.face,item.ballPosX, item.ballPosY);
+		else
+		ctx.drawImage(item.facef,item.ballPosX, item.ballPosY);
+		}
+		
+		
+		
+		
+		// kolizja ze scianami ////////////////////////////////////////////////////////////////////////
+		if(item.ballPosX <= 0 || item.ballPosX+item.sizeX >= cw)
+		{
+			cols++;
+			//item.dirX = !item.dirX;
+			if (item.ballPosX+item.sizeX >= cw)
+			item.dirX = false;
+			else if (item.ballPosX <= 0)
+			item.dirX = true;
+		}
+		
+		if(item.ballPosY <= 0 || item.ballPosY+item.sizeY >= ch)
+		{
+			cols++;
+			//item.dirY = !item.dirY;
+			if (item.ballPosY+item.sizeY >= ch)
+			item.dirY = false;
+			else if (item.ballPosY <= 0)
+			item.dirY = true;
+		}
+		// kolizja ze scianami ////////////////////////////////////////////////////////////////////////
+		
+		
+		
+		
+		// KOLIZJE WZAJEMNE
+		
+		ballArray.forEach( function(items)
+		{
+			if (item.eid != items.eid)
+			
+			{
+				
+				if (  (item.ballPosX+item.sizeX >= items.ballPosX && item.ballPosX <= items.ballPosX+item.sizeX) &&
+						(item.ballPosY+item.sizeY >= items.ballPosY && item.ballPosY <= items.ballPosY+item.sizeY))
+				{
+					
+						
+					//items.colWth = item.eid;
+					if(item.colWth != items.eid)
+					{
+					
+					
+						
+						ctx.fillStyle = "#ffffff";
+						
+						colissionHistory.push(new colizja(item.ballPosX, item.ballPosY,new Date().getTime(),"Kolizja "+item.eid+" z "+items.eid) );
+						//ctx.font = "18px Arial";
+						//ctx.fillText("Kolizja "+item.eid +" z " +items.eid,item.ballPosX, item.ballPosY-18);//
+						//ctx.fillText((item.ballSpeedX+item.ballSpeedY)+ " > "+items.ballSpeedX+items.ballSpeedY,item.ballPosX, item.ballPosY-28);//
+					
+						//console.log(item.colWth + " b4 "+items.eid)
+						//item.colWth = items.eid;
+						item.colWth = items.eid;
+						//items.colWth = item.eid;
+						
+						//console.log(item.colWth + " at "+items.eid)
+						cols++;
+						/*item.dirX = item.dirX;
+		item.dirY = !item.dirY;*/
+						
+						item.colcc++;
+						items.colcc++;
+						
+						
+						if(item.ballSpeedX+item.ballSpeedY > items.ballSpeedX+items.ballSpeedY)
+						{
+							
+							tx = items.ballSpeedX;
+							ty = items.ballSpeedY;
+							tdx = item.dirX;
+							tdy = item.dirY;
+							item.dirX = !item.dirX;
+							item.dirY = !item.dirY;
+							items.dirX = !item.dirX;
+							items.dirY = !item.dirY;
+							/*if(items.dirX == item.dirX)
+			{
+			var tdmx = item.dirX;
+			item.dirX = !items.dirX;
+			items.dirX=
+			}519 kaj
+			
+		if(items.dirY == item.dirY)
+			{
+			item.dirY = !items.mdirY;
+			}*/
+							items.ballSpeedX = 0.98*item.ballSpeedX;//+items.ballSpeedX;
+							items.ballSpeedY = 0.98*item.ballSpeedY;//+items.ballSpeedY;
+							item.ballSpeedX = 0.6*item.ballSpeedX;//+item.ballSpeedX;
+							item.ballSpeedY = 0.6*item.ballSpeedY;//+item.ballSpeedY;
+							//item.ballSpeedX = 0.99*tx;//+item.ballSpeedX;
+							//item.ballSpeedY = 0.99*ty;//+item.ballSpeedY;
+						}
+						else if (false)
+						{
+							//	item.colWth = items.eid;
+							//	items.colWth = item.eid;
+						tx = item.ballSpeedX;
+						ty = item.ballSpeedY;
+						tdx = items.dirX;
+						tdy = items.dirY;
+						item.dirX = !item.dirX;
+						item.dirY = !item.dirY;
+						items.dirX = !item.dirX;
+						items.dirY = !item.dirY;
+						/*if(items.dirX == item.dirX)
+			{
+			var tdmx = item.dirX;
+			item.dirX = !items.dirX;
+			items.dirX=
+			}
+			
+		if(items.dirY == item.dirY)
+			{
+			item.dirY = !items.mdirY;
+			}*/
+							item.ballSpeedX = 1.0*items.ballSpeedX;//+items.ballSpeedX;
+						item.ballSpeedY = 1.0*items.ballSpeedY;//+items.ballSpeedY;
+						items.ballSpeedX = 0.6*items.ballSpeedX;//+item.ballSpeedX;
+						items.ballSpeedY = 0.6*items.ballSpeedY;//+item.ballSpeedY;
+						//item.ballSpeedX = 0.99*tx;//+item.ballSpeedX;
+						//item.ballSpeedY = 0.99*ty;//+item.ballSpeedY;
+						/*items.dirX = !items.dirX;
+		items.dirY = !items.dirY;
+			/*if(item.dirX == items.dirX)
+			items.dirX = !item.dirX
+			
+		if(item.dirY == items.dirY)
+			items.dirY = !item.dirY;*/
+							/*tx = item.ballSpeedX;
+		ty = item.ballSpeedY;
+		item.ballSpeedX = 0.99*items.ballSpeedX;//+item.ballSpeeX;
+		item.ballSpeedY = 0.99*items.ballSpeedY;//+item.ballSpeedY;
+		items.ballSpeedX = 0.99*tx;//+items.ballSpeedX;
+		items.ballSpeedY = 0.99*ty;//+items.ballSpeedY;/
+							;*/}
+					}
+				}
+				else if(item.eid == items.colWth)
+				{
+				//console.log(item.eid +" " +(item.ballPosX+ballSize) +" "+ items.ballPosX +" "+ item.ballPosX +" "+ (items.ballPosX+ballSize) +" "+
+				//		(item.ballPosY+ballSize)+" "+items.ballPosY +" "+ item.ballPosY +" "+ (items.ballPosY+ballSize))
+				item.colWth = -1;
+				}
+			}
+		});
+		
+		
+		// KOLIZJE WZAJEMNE
+		
+		
+		
+		// PODSTAWOWA FUNKCJA RUCHU /////////////////////////////////////////
+		if(item.dirX)
+			item.ballPosX += item.ballSpeedX;
+		else
+			item.ballPosX -= item.ballSpeedX;
+		
+		if(item.dirY)
+			item.ballPosY += item.ballSpeedY;
+		else
+			item.ballPosY -= item.ballSpeedY;
+		// FUNKCJA RUCHU /////////////////////////////////////////
+		
+		
+		
+		///////////// CIĘŻAR GRAWITACJI I UCIĘCIE /////////////////////////////////
+		if(item.ballSpeedX<0.2)
+			item.ballSpeedX = randomFloat(0,2);
+		else 
+			item.ballSpeedX = item.ballSpeedX*gravity;
+		
+		if(item.ballSpeedY<0.2)
+			item.ballSpeedY=randomFloat(0,2);
+		else
+			item.ballSpeedY = item.ballSpeedY*gravity;
+		///////////// CIĘŻAR GRAWITACJI /////////////////////////////////
+		
+		
+		
+		
+		
+		// KOLIZJA Z KURSOREM ////////////////////////////////////////////////////////////////////////////
+		if((x+curSize >= item.ballPosX && x <= item.ballPosX+item.sizeX) && (y+curSize >= item.ballPosY && y <= item.ballPosY+item.sizeY))
+		{
+			
+			lastcol = "Kolizje: "+(new Date().getTime()- colTime);
+
+			if (((new Date().getTime()- colTime) > 100))
+			{
+				cols++;
+				qcol = new Date().getTime()- colTime + " colSPD: "+(xSpd+ySpd);
+				if(xSpd+ySpd != 0)
+				{
+					item.ballSpeedX=xSpd;//*0.2;
+					item.ballSpeedY=ySpd;//*0.2;
+					item.dirX = cDirX;
+					item.dirY = cDirY;
+					colTime = new Date().getTime();
+				}
+				else
+				{
+					item.dirX = cDirX;
+					item.dirY = cDirY;
+					colTime = new Date().getTime();
+				}
+			}
+		}
+		
+		// KOLIZJA Z KURSOREM ///////////////////////////////////////////////////////////////////
+		
+		
+		
+		
+		// KOLIZJA Z BIALYMI DZIURAMI
+		
+		whiteHolesArray.forEach(function (wh)
+	{
+	ctx.fillStyle = 'white';
+	ctx.fillRect(wh.posX, wh.posY, wh.sizeX, wh.sizeY);
+	
+	
+	if((item.ballPosX+item.sizeX >= wh.posX && item.ballPosX <= wh.posX+wh.sizeX) && (item.ballPosY+item.sizeY >= wh.posY && item.ballPosY <= wh.posY+wh.sizeY ))
+		obj.splice(index, 1);
+	
+	}
+	);
+		
+		
+		// KOLIZJA Z BIAŁYMI DZIRAMI
+		
+		
+		
+		
+	});
+	
+	if(dbg)
+	{
+	ctx.fillStyle = '#00ff00';
+	ctx.fillRect(x, y, curSize, curSize)//;ctx.drawImage(img,item.ballPosX, item.ballPosY);
+	}
+	else 
+	ctx.drawImage(faced,x, y);
+	
+	if(ballArray[0].eid != 0)
+		{
+		ctx.fillText("You Lost",cw/2, ch/2);
+		clearInterval(refreshIntervalid);
+		}
+	if(ballArray.length<2)
+	{
+	level++;
+	regenerateArray();
+	}
+	
+
+	
+	
+	
+}
+
+
+
+function table() {
+	/*ustawiamy kolor rysowania na czarny i rysujemy czarny prostokąt o wysokosci i szerokosci canvas czyli pokrywamy cały obszar czarnym kolorem.*/
+	
+	//Metoda fillRect wymaga podania 4 argumentów. Pierwsze dwa to parametry startowe na osi x i y. drugie dwa to szerokość (oś x) i wysokosć (oś y). Lewy górny róg to parmetry (0,0) a szerokosć w tym wypadku ma 1000px (taką wartość ma zmienna cw) i wysokość 500 px (taką wartość ma zmienna ch)
+
+	/*
+	Rysujemy linię (małe prostokąciki) na środku canvas (środek boiska) za pomocą pętli for. line position okręlsa nam wysokosć na osi y od jakiej zaczynamy rysować. Rysujemy dopóki ta wysokosć jest mneisjza niż wysokość canvas (określona w zmiennej ch), wreszcze za każdym razem przenosimy początek rysowania linii o 30px w dół
+	*/
+	/* for (let linePosition = 20; linePosition < ch; linePosition += 30) {
+	ct
+		ctx.fillStyle = "gray"
+		ctx.fillRect(cw / 2 - lineWidth / 2, linePosition, lineWidth, lineHeight)
+		
+	}*/
+	
+	if(dbg)
+	{
+	ctx.fillStyle = 'black'; //ten kolor będzie aktywny dopóki nie zostaniue nadpisany kolejnym ctx.fillStyle
+	ctx.fillRect(0, 0, cw, ch);
+	}
+	else
+		ctx.drawImage(bg,0, 0);
+
+}
+
+/* wywołujemy funkcję game, która wywołuje wszystkie inne funkcje */
+var frame= 0;
+function game() 
+{
+	frame++;
+	if(x> prevX)
+	{xSpd = x - prevX;
+		cDirX = true;}
+	else if (x < prevX)
+	{xSpd =  prevX -x;
+		cDirX=false;}
+	else xSpd = 0;
+	
+	if(y > prevY)
+	{ySpd = y - prevY;
+		cDirY = true;}
+	else if (y <prevY)
+	{ySpd = prevY- y;
+		cDirY=false;}
+	else ySpd=0;
+	
+	/*if (xSpd <0)
+	dirX = false
+	else
+	dirX = true;*/
+	xSpd = Math.abs(xSpd);
+	
+	/*if (ySpd <0)
+	dirY=false
+	else
+	dirY=true;*/
+	ySpd = Math.abs(ySpd);
+	
+	table()
+	ball()
+	colH()
+	// player()
+	// ai()
+	
+	frameArray.push(new Date());
+	frameArray.forEach( function(item, index,obj)
+	{
+	if(new Date().getTime()-item.getTime()> 1000)
+		obj.splice(index, 1);
+	}
+	);
+	
+	ctx.font = "16px Arial";
+	ctx.fillText(frameArray.length+"fps  MSpd:"+(xSpd+ySpd)+"px/s " + cDirX +" " + cDirY, 10, 20);
+
+	ctx.fillText("Kolizje: " + cols+ " K/s: "+ colissionHistory.length, 10, 35);
+	
+	ctx.fillText("Level: " + (level-1), 10, 55);
+
+
+	prevX = x;
+	prevY = y;
+	
+	
+}
+
+
+
+</script>
+</body>
+</html>
